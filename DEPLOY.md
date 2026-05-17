@@ -6,38 +6,34 @@ This folder is ready to deploy as the Vercel project behind `listingninja.app`.
 
 - Domain purchased in Vercel: `listingninja.app`
 - GitHub repository found: `benz862/ListingNinja`
-- Repository status: empty as of May 17, 2026
+- Repository status: code pushed to `main` on May 17, 2026
 - Local project folder: `/Volumes/SkillBinder/FB-Lister-Vercel/`
 - License verification endpoint in code: `https://api.gumroad.com/v2/licenses/verify`
 
-## 1. Push this code to GitHub
+## 1. GitHub is connected
 
-From `/Volumes/SkillBinder/FB-Lister-Vercel/`:
+This local folder has been initialized as a Git repository and pushed to:
+
+```text
+https://github.com/benz862/ListingNinja
+```
+
+If you make future edits, push them with:
 
 ```bash
-git init -b main
-git remote add origin https://github.com/benz862/ListingNinja.git
 git add .
-git commit -m "Prepare Listing Ninja Vercel license proxy"
-git push -u origin main
+git commit -m "Update Listing Ninja license proxy"
+git push
 ```
-
-If `git remote add origin` says the remote already exists, run:
-
-```bash
-git remote set-url origin https://github.com/benz862/ListingNinja.git
-```
-
-Then repeat the add, commit, and push commands.
 
 ## 2. Import the GitHub repo into Vercel
 
-1. Open Vercel and choose Add New → Project.
-2. Select the GitHub repository `benz862/ListingNinja`.
-3. Keep the framework preset as Other.
+1. The Vercel CLI has linked this folder to project `listingninja`.
+2. The Vercel project has been connected to GitHub repository `benz862/ListingNinja`.
+3. In the Vercel dashboard, confirm the project uses framework preset Other.
 4. Leave Build Command empty.
 5. Leave Output Directory empty.
-6. Click Deploy.
+6. Click Deploy or Redeploy after environment variables are set.
 
 Vercel will detect `api/verify-license.js` as a serverless function and expose it at `/api/verify-license`.
 
@@ -61,8 +57,10 @@ After adding or changing environment variables, redeploy the project so producti
 2. Go to Settings → Domains.
 3. Add `listingninja.app` if it is not already attached.
 4. Add `www.listingninja.app` if you want the `www` hostname too.
-5. Because the domain was purchased through Vercel, DNS should be managed automatically in the same account.
+5. Because the domain was purchased through Vercel, DNS should be managed automatically in the account that owns the domain.
 6. Set the preferred production domain to `listingninja.app`.
+
+Note: the local Vercel CLI scope `glenn-donnellys-projects` could not access `listingninja.app`, so attach the domain from the Vercel account/team where the domain was purchased or switch the CLI to that scope first.
 
 ## 5. Verify the live API
 

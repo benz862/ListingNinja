@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Listing Ninja — AI Marketplace Listing Generator</title>
+  <meta name="description" content="Listing Ninja turns photos and details into professional marketplace listings for Facebook Marketplace, eBay, Craigslist, OfferUp, Mercari, Etsy, and more." />
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg-2: #0b1728;
+      --panel: rgba(15, 28, 48, 0.78);
+      --panel-2: rgba(20, 38, 64, 0.82);
+      --line: rgba(255, 255, 255, 0.11);
+      --line-bright: rgba(251, 191, 36, 0.34);
+      --text: #f8fafc;
+      --muted: #a7b4c8;
+      --soft: #d6dee9;
+      --amber: #fbbf24;
+      --amber-2: #f59e0b;
+      --blue: #38bdf8;
+      --green: #34d399;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+      --radius: 26px;
+      --max: 1180px;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% -10%, rgba(56, 189, 248, 0.2), transparent 34rem),
+        radial-gradient(circle at 84% 8%, rgba(251, 191, 36, 0.18), transparent 28rem),
+        linear-gradient(135deg, #06101d 0%, #0a1322 44%, #070b13 100%);
+      min-height: 100vh;
+      line-height: 1.55;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(var(--max), calc(100% - 40px)); margin: 0 auto; }
+    .glow-grid {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.75), transparent 76%);
+    }
+
+    header {
+      padding: 28px 0 8px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(18px);
+      background: linear-gradient(to bottom, rgba(7, 17, 31, 0.88), rgba(7, 17, 31, 0.48));
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    nav { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 850; letter-spacing: -0.03em; }
+    .logo {
+      width: 160px; height: auto;
+      display: block;
+    }
+    .nav-links { display: flex; gap: 18px; color: var(--muted); font-size: 14px; }
+    .nav-links a:hover { color: var(--text); }
+
+    .hero { padding: 88px 0 62px; }
+    .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 44px; align-items: center; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 8px 12px; border: 1px solid var(--line-bright); border-radius: 999px;
+      color: #fde68a; background: rgba(251, 191, 36, 0.08); font-size: 13px; font-weight: 750;
+    }
+    .eyebrow::before { content: "✦"; color: var(--amber); }
+    h1 { margin: 22px 0 10px; font-size: clamp(48px, 8vw, 92px); line-height: .9; letter-spacing: -0.08em; }
+    .tagline { margin: 0 0 18px; font-size: clamp(25px, 4vw, 45px); line-height: 1.04; letter-spacing: -0.055em; color: #fff7df; }
+    .subhead { max-width: 710px; color: var(--soft); font-size: clamp(17px, 2vw, 20px); margin: 0 0 28px; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 28px; }
+    .btn {
+      display: inline-flex; justify-content: center; align-items: center; gap: 10px;
+      padding: 15px 20px; border-radius: 999px; font-weight: 850; border: 1px solid transparent;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { color: #111827; background: linear-gradient(135deg, #fde68a, var(--amber), var(--amber-2)); box-shadow: 0 18px 44px rgba(245, 158, 11, 0.26); }
+    .btn-secondary { color: white; background: rgba(56, 189, 248, 0.13); border-color: rgba(56, 189, 248, 0.35); box-shadow: 0 18px 44px rgba(56, 189, 248, 0.12); }
+    .badges { display: flex; flex-wrap: wrap; gap: 9px; max-width: 760px; }
+    .badge { padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid var(--line); color: #dbeafe; font-size: 13px; font-weight: 700; }
+
+    .preview-card {
+      position: relative; border: 1px solid var(--line); border-radius: 34px;
+      background: linear-gradient(160deg, rgba(20, 38, 64, .84), rgba(6, 14, 26, .86));
+      box-shadow: var(--shadow); padding: 22px; overflow: hidden;
+    }
+    .preview-card::after {
+      content: ""; position: absolute; inset: -1px; pointer-events: none; border-radius: inherit;
+      background: radial-gradient(circle at 20% 10%, rgba(251,191,36,.22), transparent 18rem), radial-gradient(circle at 90% 0%, rgba(56,189,248,.18), transparent 18rem);
+    }
+    .mini-window { position: relative; z-index: 1; border-radius: 24px; overflow: hidden; border: 1px solid var(--line); background: #081322; }
+    .window-bar { display: flex; gap: 7px; padding: 13px; background: rgba(255,255,255,0.045); border-bottom: 1px solid var(--line); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; }
+    .dot:nth-child(2) { background: #f59e0b; } .dot:nth-child(3) { background: #22c55e; }
+    .listing-ui { padding: 20px; display: grid; gap: 14px; }
+    .ai-card { padding: 16px; border-radius: 18px; background: rgba(255,255,255,0.055); border: 1px solid var(--line); }
+    .row { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .pill { color: #07111f; background: var(--amber); padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 900; }
+    .skeleton { height: 10px; border-radius: 999px; background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(255,255,255,.24), rgba(255,255,255,.12)); margin-top: 10px; }
+    .skeleton.short { width: 70%; }
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .stat { padding: 12px; border-radius: 16px; background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.16); }
+    .stat strong { display: block; color: #e0f2fe; font-size: 20px; }
+    .stat span { color: var(--muted); font-size: 12px; }
+
+    section { padding: 58px 0; }
+    .section-head { max-width: 760px; margin-bottom: 28px; }
+    h2 { margin: 0 0 10px; font-size: clamp(32px, 4vw, 54px); line-height: 1; letter-spacing: -0.06em; }
+    .section-head p { margin: 0; color: var(--muted); font-size: 18px; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card, .price-card, .persona {
+      border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: 0 18px 58px rgba(0,0,0,.2);
+    }
+    .step { padding: 24px; min-height: 210px; position: relative; overflow: hidden; }
+    .step-num { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; color: #07111f; font-weight: 950; background: linear-gradient(135deg, var(--amber), #fde68a); margin-bottom: 26px; }
+    .step h3, .card h3, .price-card h3, .persona h3 { margin: 0 0 9px; font-size: 22px; letter-spacing: -0.035em; }
+    .step p, .card p, .price-card p, .persona p { margin: 0; color: var(--muted); }
+
+    .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; align-items: stretch; }
+    .tier { padding: 28px; }
+    .tier.featured { border-color: rgba(251,191,36,.38); background: linear-gradient(160deg, rgba(38, 34, 22, .72), rgba(15, 28, 48, .86)); position: relative; }
+    .tier.featured::before { content: "Best value"; position: absolute; right: 24px; top: 22px; color: #07111f; background: var(--amber); border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 950; }
+    .price { font-size: 43px; font-weight: 950; letter-spacing: -0.06em; margin: 8px 0 4px; }
+    .price small { font-size: 14px; color: var(--muted); letter-spacing: 0; }
+    .list { list-style: none; padding: 0; margin: 20px 0 0; display: grid; gap: 10px; }
+    .list li { color: var(--soft); display: flex; gap: 10px; align-items: flex-start; }
+    .list li::before { content: "✓"; flex: 0 0 auto; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 7px; color: #052e1b; background: var(--green); font-size: 13px; font-weight: 950; margin-top: 1px; }
+    .limits li::before { content: "–"; color: #fef3c7; background: rgba(251,191,36,.18); border: 1px solid rgba(251,191,36,.28); }
+    .label { color: #fde68a; text-transform: uppercase; letter-spacing: .12em; font-size: 12px; font-weight: 950; margin-top: 22px; }
+
+    .personas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .persona { padding: 24px; }
+    .icon { width: 52px; height: 52px; border-radius: 18px; display: grid; place-items: center; font-size: 26px; margin-bottom: 20px; background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.24); }
+
+    .delivery-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; align-items: stretch; }
+    .delivery-card { padding: 18px; color: var(--soft); font-weight: 720; min-height: 154px; }
+    .faq-step-num {
+      display: block;
+      color: var(--amber);
+      font-size: 42px;
+      line-height: .9;
+      font-weight: 950;
+      letter-spacing: -0.07em;
+      margin-bottom: 14px;
+    }
+    .faq-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 32px; }
+    .faq-item { padding: 22px; color: var(--soft); }
+    .faq-item h3 { margin: 0 0 9px; color: var(--text); font-size: 20px; letter-spacing: -.035em; }
+    .faq-item p { margin: 0; line-height: 1.65; }
+
+    .pricing { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .price-card { padding: 30px; position: relative; overflow: hidden; }
+    .price-card.pro { border-color: rgba(251,191,36,.48); transform: translateY(-10px); background: linear-gradient(145deg, rgba(251,191,36,.13), rgba(15,28,48,.88)); }
+    .price-card.pro::after { content: "Featured"; position: absolute; top: 22px; right: 22px; padding: 6px 11px; border-radius: 999px; background: rgba(251,191,36,.16); border: 1px solid rgba(251,191,36,.3); color: #fde68a; font-size: 12px; font-weight: 900; }
+    .api-note { margin-top: 18px; padding: 22px 24px; border: 1px solid rgba(56,189,248,.24); border-radius: var(--radius); background: rgba(56,189,248,.07); color: var(--soft); }
+    .api-note strong { display: block; color: var(--text); font-size: 20px; letter-spacing: -.03em; margin-bottom: 6px; }
+    .api-note p { margin: 0; line-height: 1.65; }
+
+    footer { padding: 42px 0 54px; color: var(--muted); border-top: 1px solid var(--line); }
+    .footer-row { display: flex; justify-content: space-between; gap: 20px; align-items: center; }
+    .small { font-size: 13px; max-width: 560px; }
+
+    @media (max-width: 900px) {
+      header { position: static; }
+      .hero-grid, .feature-grid, .pricing { grid-template-columns: 1fr; }
+      .steps, .personas { grid-template-columns: 1fr; }
+      .delivery-grid, .faq-list { grid-template-columns: 1fr 1fr; }
+      .price-card.pro { transform: none; }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 560px) {
+      .wrap { width: min(100% - 28px, var(--max)); }
+      .hero { padding-top: 52px; }
+      .cta-row .btn { width: 100%; }
+      .delivery-grid, .faq-list, .stat-row { grid-template-columns: 1fr; }
+      .footer-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-grid"></div>
+  <header>
+    <nav class="wrap" aria-label="Main navigation">
+      <a class="brand" href="#top" aria-label="Listing Ninja home"><img class="logo" src="ListingNinja Logo.png" alt="Listing Ninja logo"></a>
+      <div class="nav-links">
+        <a href="#how">How it works</a><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero wrap">
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow">AI-powered marketplace listings</span>
+          <h1>Listing Ninja</h1>
+          <p class="tagline">Turn clutter into cash — in seconds.</p>
+          <p class="subhead">AI-powered listing generator that writes professional marketplace copy from a photo and a few details. No subscriptions. No monthly fees. Buy once, keep forever.</p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="#buy-basic">Get Basic — $7.99</a>
+            <a class="btn btn-secondary" href="#buy-pro">Get Pro — $24.99</a>
+          </div>
+          <div class="badges" aria-label="Supported platforms">
+            <span class="badge">Facebook Marketplace</span><span class="badge">eBay</span><span class="badge">Craigslist</span><span class="badge">OfferUp</span><span class="badge">Mercari</span><span class="badge">Etsy</span><span class="badge">Buy/Sell</span><span class="badge">TikTok Shop</span>
+          </div>
+        </div>
+        <div class="preview-card" aria-label="Generated listing preview">
+          <div class="mini-window">
+            <div class="window-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="listing-ui">
+              <div class="ai-card row"><strong>Vintage Oak Coffee Table</strong><span class="pill">Ready</span></div>
+              <div class="ai-card"><strong>AI description</strong><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton short"></div></div>
+              <div class="stat-row"><div class="stat"><strong>$75–$110</strong><span>Price range</span></div><div class="stat"><strong>8.7</strong><span>Condition</span></div><div class="stat"><strong>12</strong><span>Keywords</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="wrap">
+      <div class="section-head"><h2>How it works</h2><p>Go from messy notes and photos to polished listings in one quick flow.</p></div>
+      <div class="steps">
+        <article class="card step"><div class="step-num">1</div><h3>Upload the item</h3><p>Upload a photo and paste the product URL or describe it.</p></article>
+        <article class="card step"><div class="step-num">2</div><h3>Let AI write it</h3><p>AI writes a complete listing — title, description, price range, keywords, and condition score.</p></article>
+        <article class="card step"><div class="step-num">3</div><h3>Post anywhere</h3><p>Copy it or export to CSV / spreadsheet. Post it anywhere.</p></article>
+      </div>
+    </section>
+
+    <section id="features" class="wrap">
+      <div class="section-head"><h2>Choose your seller tier</h2><p>Start simple with Basic, or unlock the full workflow with Pro.</p></div>
+      <div class="feature-grid">
+        <article class="card tier">
+          <h3>Basic</h3><div class="price">$7.99 <small>one-time</small></div><p>Perfect for occasional sellers who want better Facebook Marketplace posts fast.</p>
+          <div class="label">Included</div>
+          <ul class="list"><li>Facebook Marketplace support</li><li>1 photo upload</li><li>AI-generated title</li><li>AI-generated description</li><li>Basic pricing assistance</li><li>Basic category suggestions</li><li>Copy-to-clipboard export</li></ul>
+          <div class="label">Limitations</div>
+          <ul class="list limits"><li>Single marketplace only</li><li>No saved history</li><li>No advanced pricing tools</li><li>No condition scoring</li><li>No spreadsheet exports</li></ul>
+        </article>
+        <article class="card tier featured">
+          <h3>Pro</h3><div class="price">$24.99 <small>one-time</small></div><p>Built for side hustlers, resellers, and anyone listing across multiple platforms.</p>
+          <div class="label">Included</div>
+          <ul class="list"><li>Multiple photo uploads</li><li>Advanced AI listing generation</li><li>SEO optimization</li><li>Competitor pricing analysis</li><li>Condition scoring</li><li>Keyword generation</li><li>Spreadsheet CSV export</li><li>Saved local listing history</li><li>Multi-platform export support</li><li>Enhanced AI prompting</li><li>Advanced listing templates</li></ul>
+          <div class="label">Platforms supported</div>
+          <div class="badges"><span class="badge">Facebook Marketplace</span><span class="badge">eBay</span><span class="badge">Craigslist</span><span class="badge">OfferUp</span><span class="badge">Mercari</span><span class="badge">Etsy</span><span class="badge">Buy Vintage</span><span class="badge">TikTok Shop</span></div>
+        </article>
+      </div>
+      <div class="api-note">
+        <strong>How Listing Ninja saves you money.</strong>
+        <p>No monthly subscription. You connect your own API key from Anthropic, OpenAI, or Google Gemini and pay only for what you use — typically just cents per listing.</p>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="section-head"><h2>Who it’s for</h2><p>Designed for anyone who wants better listings without learning copywriting, SEO, or pricing research.</p></div>
+      <div class="personas">
+        <article class="persona"><div class="icon">🏠</div><h3>Casual sellers</h3><p>Clean out your home and make every item sound worth buying.</p></article>
+        <article class="persona"><div class="icon">📈</div><h3>Side hustlers</h3><p>Flip items for profit with stronger copy and smarter pricing guidance.</p></article>
+        <article class="persona"><div class="icon">📦</div><h3>Resellers</h3><p>Manage volume with repeatable templates, exports, and multi-platform support.</p></article>
+      </div>
+    </section>
+
+    <section id="faq" class="wrap">
+      <div class="section-head"><h2>FAQ / How delivery works</h2><p>Simple purchase, instant delivery, and no recurring bill.</p></div>
+      <div class="delivery-grid">
+        <div class="card delivery-card"><span class="faq-step-num">1</span>Purchase once through Gumroad.</div>
+        <div class="card delivery-card"><span class="faq-step-num">2</span>Get the download link and license key by email.</div>
+        <div class="card delivery-card"><span class="faq-step-num">3</span>Open the HTML file in any modern browser.</div>
+        <div class="card delivery-card"><span class="faq-step-num">4</span>Enter your license key to unlock your tier.</div>
+        <div class="card delivery-card"><span class="faq-step-num">5</span>Use it on Mac, Windows, or any modern browser — no subscription.</div>
+      </div>
+      <div class="section-head" style="margin-top:46px"><h2>Frequently Asked Questions</h2><p>Clear answers before you buy.</p></div>
+      <div class="faq-list">
+        <article class="card faq-item"><h3>Why do I need my own API key?</h3><p>You bring your own Anthropic, OpenAI, or Google Gemini key, then pay only for what you actually use. That is typically very affordable, avoids monthly subscription fees, and helps keep Listing Ninja a low one-time purchase.</p></article>
+        <article class="card faq-item"><h3>Does it work on Windows and Mac?</h3><p>Yes. Listing Ninja is a browser-based HTML app, so it works on Mac, Windows, and any device with a modern browser.</p></article>
+        <article class="card faq-item"><h3>Do I need to install anything?</h3><p>No install is required. Open the downloaded HTML file in your browser, enter your license key, add your AI API key, and start creating listings.</p></article>
+        <article class="card faq-item"><h3>Is this a subscription?</h3><p>No. Basic and Pro are one-time purchases. You bring your own AI provider key, so there is no recurring Listing Ninja fee.</p></article>
+      </div>
+    </section>
+
+    <section id="pricing" class="wrap">
+      <div class="section-head"><h2>Buy once. List forever.</h2><p>Choose the version that matches how often you sell.</p></div>
+      <div class="pricing">
+        <article id="buy-basic" class="price-card"><h3>Basic</h3><div class="price">$7.99</div><p>Best for single-item Facebook Marketplace listings.</p><div style="height:22px"></div><a class="btn btn-secondary" href="https://gumroad.com">Buy Basic on Gumroad</a></article>
+        <article id="buy-pro" class="price-card pro"><h3>Pro</h3><div class="price">$24.99</div><p>The complete multi-platform listing workflow with exports and advanced AI tools.</p><div style="height:22px"></div><a class="btn btn-primary" href="https://gumroad.com">Buy Pro on Gumroad</a></article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-row">
+      <strong>Listing Ninja © 2026</strong>
+      <span class="small">Delivered via Gumroad. Files downloaded after purchase. License key required for activation.</span>
+    </div>
+  </footer>
+</body>
+</html>
